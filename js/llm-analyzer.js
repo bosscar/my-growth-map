@@ -1,4 +1,7 @@
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta?.env?.VITE_GEMINI_API_KEY || "";
+if (!API_KEY) {
+    console.warn("⚠️ VITE_GEMINI_API_KEY not found in environment. LLM features will be disabled. Run 'npm run dev' locally or set up GitHub Secrets for hosting.");
+}
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
 // Color palette for dynamically created parts
