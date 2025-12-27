@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Map | Your Mental Landscape</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">GROWTH MAP</div>
+        <div class="header-actions">
+            <button id="settings-btn" class="glass"
+                style="padding: 10px 20px; border-radius: 12px; cursor: pointer;">Settings</button>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- Left Panel: Journaling -->
+        <section class="side-panel glass">
+            <div class="prompt-box">
+                <h3>Daily Reflection</h3>
+                <p id="journal-prompt" class="prompt-text">Welcome back. How are you feeling in your body right now?</p>
+                <button id="new-prompt"
+                    style="background:none; border:none; color:var(--clr-calm); cursor:pointer; font-size: 0.8rem; margin-top: 5px;">Give
+                    me another prompt</button>
+            </div>
+
+            <div class="recorder-section">
+                <button id="mic-btn" class="mic-btn">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+                <p id="record-status" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">Tap to
+                    start dictating</p>
+
+                <!-- Transcription as clickable/editable area -->
+                <div id="transcription-container" class="transcription-container">
+                    <div id="transcription-preview" class="transcription-preview" title="Click to edit">
+                        Your words will appear here...
+                    </div>
+                    <textarea id="transcription-edit" class="transcription-edit"
+                        placeholder="Type or edit your reflection here..." style="display: none;"></textarea>
+                    <div id="transcription-hint"
+                        style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 5px; text-align: center;">
+                        💡 Click to type instead of speaking
+                    </div>
+                </div>
+
+                <div id="entry-buttons" style="display: flex; gap: 10px; width: 100%; margin-top: 1rem;">
+                    <button id="save-entry" class="glass"
+                        style="flex: 1; padding: 12px; background: rgba(46, 204, 113, 0.2); display: none; color: white;">Process
+                        Entry</button>
+                    <button id="retry-entry" class="glass"
+                        style="flex: 1; padding: 12px; background: rgba(255, 62, 62, 0.2); display: none; color: var(--clr-fear);">Retry</button>
+                    <button id="clear-entry" class="glass"
+                        style="padding: 12px 16px; display: none; color: var(--text-secondary);">✕</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <h4 style="margin-bottom: 1rem;">Recent Journey</h4>
+                <div id="entries-list" class="entries-list">
+                    <!-- Entries will grow here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Center Panel: The Map -->
+        <section class="center-panel">
+            <div id="map-container" class="glass">
+                <svg id="growth-map" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <g id="bridges-group"></g>
+                    <g id="regions-group"></g>
+                    <g id="labels-group"></g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Right Panel: Stats & Habits -->
+        <section class="side-panel stats-panel glass">
+            <div class="stat-item">
+                <span class="stat-label">Journey Progress</span>
+                <span class="stat-value" id="growth-score">0%</span>
+                <div class="progress-bar">
+                    <div id="score-fill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">Days Traveled</span>
+                <span class="stat-value" id="days-traveled">1 Day</span>
+            </div>
+
+            <div class="stat-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="stat-label">Active Parts</span>
+                    <span id="parts-count" style="font-size: 0.7rem; color: var(--text-secondary);">12 parts
+                        discovered</span>
+                </div>
+                <div id="parts-distribution" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                    <!-- Distribution visualizer -->
+                </div>
+            </div>
+
+            <!-- Habit Tracker -->
+            <div class="stat-item" style="margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span class="stat-label">Daily Habits</span>
+                    <button id="add-habit-btn"
+                        style="background: none; border: none; color: var(--clr-calm); cursor: pointer; font-size: 1.2rem;">+</button>
+                </div>
+                <div id="habits-container" class="habits-container">
+                    <!-- Habits will be rendered here -->
+                </div>
+            </div>
+
+            <div class="stat-item" style="margin-top: auto;">
+                <span class="stat-label">Growth Insight</span>
+                <p id="growth-insight"
+                    style="font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.4; color: var(--clr-joy);">"Your map is
+                    ready to grow. Start by sharing how you feel."</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Portal Settings</h2>
+                <button id="close-settings" class="glass" style="padding: 5px 15px; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- Reminders -->
+            <div class="setting-group">
+                <label>Daily Reminders</label>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">Get notified to journal
+                    and reflect.</p>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="reminder-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                    <span>Enable browser notifications</span>
+                </div>
+            </div>
+
+            <div class="setting-group" style="margin-top: 2rem;">
+                <label>Export Journey</label>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">Download your maps and
+                    entries as a JSON file.</p>
+                <button id="export-data" class="glass" style="width: 100%; padding: 10px; cursor: pointer;">Download
+                    .json</button>
+            </div>
+
+            <div class="setting-group" style="margin-top: 2rem;">
+                <label style="color: var(--clr-fear);">Dangerous Territory</label>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">This will permanently
+                    wipe your map and all entries.</p>
+                <button id="reset-data" class="glass"
+                    style="width: 100%; padding: 10px; border-color: var(--clr-fear); color: var(--clr-fear); cursor: pointer;">Clear
+                    All Data</button>
+            </div>
+
+            <div style="margin-top: 3rem; text-align: center; font-size: 0.7rem; color: var(--text-secondary);">
+                Growth Map Portal v1.1 | Powered by Gemini 2.5 Flash
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
