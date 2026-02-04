@@ -6,6 +6,7 @@ import { AppStorage } from './storage.js';
 let isRecording = false;
 let recognition = null;
 let currentTranscript = "";
+let baseTranscript = ""; // Track transcript before current recording session
 let data = AppStorage.load();
 
 const prompts = [
@@ -45,20 +46,40 @@ function setupRecognition() {
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onend = () => {
+        if (isRecording) {
+            // If it ended but we still think we are recording, it might have timed out
+            // or been stopped by the browser. 
+            stopRecording();
+        }
+    };
 
     recognition.onresult = (event) => {
         let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        let sessionFinal = '';
+
+        // Rebuild the current session's transcript from scratch to avoid duplication
+        // that often occurs when relying on event.resultIndex
+        for (let i = 0; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-                currentTranscript += event.results[i][0].transcript + " ";
+                sessionFinal += transcript + " ";
             } else {
-                interimTranscript += event.results[i][0].transcript;
+                interimTranscript += transcript;
             }
         }
-        document.getElementById('transcription-preview').innerHTML =
-            `<strong>${currentTranscript}</strong> <span style="opacity: 0.5">${interimTranscript}</span>`;
 
-        if (currentTranscript.length > 10) {
+        // Combine base (previous text) with what we just heard
+        currentTranscript = (baseTranscript + " " + sessionFinal).trim().replace(/\s+/g, ' ') + " ";
+
+        const preview = document.getElementById('transcription-preview');
+        if (preview) {
+            preview.innerHTML = `<strong>${currentTranscript}</strong> <span style="opacity: 0.5">${interimTranscript}</span>`;
+        }
+
+        if (currentTranscript.trim().length > 5) {
             updateButtonVisibility();
             // Update the edit textarea if it's visible
             const edit = document.getElementById('transcription-edit');
@@ -183,6 +204,11 @@ async function handleImageScan(event) {
 }
 
 function switchToEditMode() {
+    // If recording, stop it first to prevent mid-speech overwrites
+    if (isRecording) {
+        stopRecording();
+    }
+
     const preview = document.getElementById('transcription-preview');
     const edit = document.getElementById('transcription-edit');
     const hint = document.getElementById('transcription-hint');
@@ -190,7 +216,7 @@ function switchToEditMode() {
     if (preview && edit) {
         preview.style.display = 'none';
         edit.style.display = 'block';
-        edit.value = currentTranscript;
+        edit.value = currentTranscript.trim();
         edit.focus();
         if (hint) hint.style.display = 'none';
     }
@@ -253,10 +279,18 @@ function toggleRecording() {
 
 function startRecording() {
     if (!recognition) return;
+
+    // Capture the state of the transcript before we start adding new voice data
+    baseTranscript = currentTranscript;
+
     isRecording = true;
-    recognition.start();
-    document.getElementById('mic-btn').classList.add('recording');
-    document.getElementById('record-status').textContent = "Listening... Tap to stop";
+    try {
+        recognition.start();
+        document.getElementById('mic-btn').classList.add('recording');
+        document.getElementById('record-status').textContent = "Listening... Tap to stop";
+    } catch (e) {
+        console.warn("Recognition already started or failed to start:", e);
+    }
 }
 
 function stopRecording() {
