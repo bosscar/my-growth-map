@@ -1,4 +1,4 @@
-import { analyzeJournalEntry } from './llm-analyzer.js';
+import { analyzeJournalEntry, transcribeJournalImage } from './llm-analyzer.js';
 import { renderMap } from './map.js';
 import { AppStorage } from './storage.js';
 
@@ -77,6 +77,8 @@ function setupRecognition() {
 
 function setupEventListeners() {
     const micBtn = document.getElementById('mic-btn');
+    const scanBtn = document.getElementById('scan-btn');
+    const imageInput = document.getElementById('journal-image-input');
     const saveBtn = document.getElementById('save-entry');
     const retryBtn = document.getElementById('retry-entry');
     const clearBtn = document.getElementById('clear-entry');
@@ -85,6 +87,12 @@ function setupEventListeners() {
     const transcriptionEdit = document.getElementById('transcription-edit');
 
     micBtn.addEventListener('click', toggleRecording);
+
+    if (scanBtn && imageInput) {
+        scanBtn.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', handleImageScan);
+    }
+
     saveBtn.addEventListener('click', processEntry);
     newPromptBtn.addEventListener('click', setNewPrompt);
 
@@ -121,6 +129,56 @@ function setupEventListeners() {
                 switchToPreviewMode();
             }
         });
+    }
+}
+
+async function handleImageScan(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('record-status');
+    const previewEl = document.getElementById('transcription-preview');
+    const originalStatus = (statusEl && statusEl.textContent) || "Tap to dictate or scan";
+
+    try {
+        if (statusEl) statusEl.textContent = "⌛ Reading image...";
+        if (previewEl) previewEl.innerHTML = "<em>Capturing your handwriting...</em>";
+
+        // Convert to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const base64Data = await base64Promise;
+
+        if (statusEl) statusEl.textContent = "✨ Transcribing with AI...";
+        const transcribedText = await transcribeJournalImage(base64Data, file.type);
+
+        if (transcribedText) {
+            currentTranscript = transcribedText;
+            switchToEditMode();
+            updateButtonVisibility();
+            if (statusEl) statusEl.textContent = "✅ Scan complete!";
+
+            // Clear input so same file can be scanned again if needed
+            event.target.value = '';
+        } else {
+            throw new Error("No text found in image");
+        }
+
+    } catch (error) {
+        console.error("Scan failed:", error);
+        if (statusEl) statusEl.textContent = "❌ Scan failed. Try a clearer photo.";
+        if (previewEl) previewEl.innerHTML = "Your words will appear here...";
+    } finally {
+        setTimeout(() => {
+            if (statusEl && (statusEl.textContent.includes("✅") || statusEl.textContent.includes("❌"))) {
+                statusEl.textContent = originalStatus;
+            }
+        }, 3000);
     }
 }
 

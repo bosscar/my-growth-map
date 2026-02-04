@@ -32,17 +32,32 @@
             </div>
 
             <div class="recorder-section">
-                <button id="mic-btn" class="mic-btn">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        <line x1="12" y1="19" x2="12" y2="23"></line>
-                        <line x1="8" y1="23" x2="16" y2="23"></line>
-                    </svg>
-                </button>
-                <p id="record-status" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">Tap to
-                    start dictating</p>
+                <div
+                    style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 5px;">
+                    <button id="mic-btn" class="mic-btn" title="Speak your reflection">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                    <button id="scan-btn" class="mic-btn" title="Scan journal page"
+                        style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                            </path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <input type="file" id="journal-image-input" accept="image/*" capture="environment"
+                    style="display: none;">
+                <p id="record-status" style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                    Tap to dictate or scan a page
+                </p>
 
                 <!-- Transcription as clickable/editable area -->
                 <div id="transcription-container" class="transcription-container">

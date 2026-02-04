@@ -121,3 +121,58 @@ export async function analyzeJournalEntry(text, existingParts = []) {
         };
     }
 }
+
+/**
+ * Transcribes handwritten text from an image using Gemini's vision capability.
+ * @param {string} base64Data - Base64 encoded image data (without the data:image/xxx;base64, prefix)
+ * @param {string} mimeType - The mime type of the image
+ * @returns {Promise<string>} - The transcribed text
+ */
+export async function transcribeJournalImage(base64Data, mimeType = "image/jpeg") {
+    const prompt = `
+        You are an expert at transcribing handwritten journal entries. 
+        Transcribe the text in this image accurately. 
+        If there are parts that are illegible, use best guesses or indicate [illegible].
+        Maintain the paragraph structure.
+        Return ONLY the transcribed text, nothing else.
+    `;
+
+    try {
+        console.log("Calling Gemini API for OCR...");
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        {
+                            inline_data: {
+                                mime_type: mimeType,
+                                data: base64Data
+                            }
+                        }
+                    ]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`API Response Error (${response.status}): ${errorBody}`);
+        }
+
+        const data = await response.json();
+        if (!data.candidates || data.candidates.length === 0) {
+            throw new Error("No candidates returned from Gemini API");
+        }
+
+        return data.candidates[0].content.parts[0].text.trim();
+    } catch (error) {
+        console.error("OCR failed:", error);
+        throw error;
+    }
+}
+

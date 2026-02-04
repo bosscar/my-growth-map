@@ -135,8 +135,8 @@ header {
 }
 
 .mic-btn {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--clr-calm) 0%, var(--clr-shame) 100%);
     border: none;
@@ -144,13 +144,20 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: white;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 30px rgba(52, 152, 219, 0.4);
     position: relative;
     z-index: 10;
 }
+
+#scan-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--clr-calm) !important;
+}
+
 
 .mic-btn.recording {
     background: linear-gradient(135deg, var(--clr-fear) 0%, var(--clr-anger) 100%);
